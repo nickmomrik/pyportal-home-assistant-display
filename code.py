@@ -23,11 +23,9 @@ from adafruit_button import Button
 import adafruit_touchscreen
 import adafruit_minimqtt.adafruit_minimqtt as MQTT
 
-
 def led_fill(color):
     led_status.fill(COLORS[color])
     led_strip.fill(COLORS[color])
-
 
 def led_chase(color, direction="right"):
     length = 4
@@ -50,12 +48,10 @@ def led_chase(color, direction="right"):
                 led_strip[i + length] = COLORS["off"]
             time.sleep(wait)
 
-
-# b: from 0 (off) to 1 (100% brightness)
+# b = 0 -> 10
 def led_bright(b):
     led_status.brightness = b
     led_strip.brightness = b
-
 
 def led_pulse(color):
     wait = 0.01
@@ -70,9 +66,7 @@ def led_pulse(color):
         led_bright(i / 100)
         time.sleep(wait)
 
-    led_fill("off")
-    led_bright(BRIGHT)
-
+    led_reset()
 
 def led_rainbow():
     for j in range(256):
@@ -81,20 +75,19 @@ def led_rainbow():
 
 def led_reset():
     led_fill("off")
-    led_bright(BRIGHT)
+    led_bright(DEF_BRIGHT)
 
 def led_animate():
     if not led_params:
         return
 
     command = led_params[0]
-    # Default to "white"
     if len(led_params) == 2:
         option = led_params[1]
     else:
-        option = "white"
+        option = DEF_COLOR
     if option not in COLORS and command != "bright":
-        option = "white"
+        option = DEF_COLOR
 
     if "chase" == command:
         led_chase(option)
@@ -112,12 +105,12 @@ def led_animate():
     elif "bright" == command:
         try:
             bright = int(option)
-            # Restrict value between 0 and 10, then convert to 0.0 - 1.0
+            # Restrict 0 - 10, then convert to 0.0 - 1.0
             bright = max(0, min(10, bright)) / 10
             led_bright(bright)
         except (ValueError, TypeError):
             print("Invalid bright value, resetting to default")
-            led_bright(BRIGHT)
+            led_bright(DEF_BRIGHT)
 
 # MQTT Functions
 def connect(client, userdata, flags, rc):
@@ -197,12 +190,13 @@ COLORS = {
 }
 
 LEDS = 12
-BRIGHT = 0.5
 LEDS_MQTT = "pyportal/leds"
+DEF_BRIGHT = 0.2
+DEF_COLOR = "white"
 
 led_params = []
-led_status = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=BRIGHT)
-led_strip = neopixel.NeoPixel(board.D3, LEDS, brightness=BRIGHT)
+led_status = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=DEF_BRIGHT)
+led_strip = neopixel.NeoPixel(board.D3, LEDS, brightness=DEF_BRIGHT)
 led_fill("off")
 
 try:
