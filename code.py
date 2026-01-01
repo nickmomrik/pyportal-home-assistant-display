@@ -83,10 +83,18 @@ def led_reset():
     led_fill("off")
     led_bright(BRIGHT)
 
-
 def led_animate():
-    command = led_params[0] if len(led_params) > 0 else None
-    option = led_params[1] if len(led_params) == 2 else "white"
+    if not led_params:
+        return
+
+    command = led_params[0]
+    # Default to "white"
+    if len(led_params) == 2:
+        option = led_params[1]
+    else:
+        option = "white"
+    if option not in COLORS and command != "bright":
+        option = "white"
 
     if "chase" == command:
         led_chase(option)
@@ -102,16 +110,14 @@ def led_animate():
     elif "rainbow" == command:
         led_rainbow()
     elif "bright" == command:
-        # accept 0 to 10 and convert to a decimal
         try:
             bright = int(option)
-            bright = bright / 10
+            # Restrict value between 0 and 10, then convert to 0.0 - 1.0
+            bright = max(0, min(10, bright)) / 10
             led_bright(bright)
-        except ValueError:
-            print("Invalid bright value: cannot convert to integer")
-    else:
-        led_reset()
-
+        except (ValueError, TypeError):
+            print("Invalid bright value, resetting to default")
+            led_bright(BRIGHT)
 
 # MQTT Functions
 def connect(client, userdata, flags, rc):
@@ -137,10 +143,8 @@ def message(client, topic, message):
     if topic == LEDS_MQTT:
         global led_params
 
-        if len(message) > 0:
+        if message:
             led_params = message.replace('"', "").split(":")
-        else:
-            led_params = []
 
     for i in range(len(lines)):
         if topic == lines[i]["mqtt"]:
@@ -192,7 +196,7 @@ COLORS = {
     "yellow": (255, 150, 0),
 }
 
-LEDS = 30
+LEDS = 12
 BRIGHT = 0.5
 LEDS_MQTT = "pyportal/leds"
 
