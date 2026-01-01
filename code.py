@@ -294,13 +294,13 @@ for i in range(len(b_info)):
             height=BUTTON_HEIGHT,
             label=b["label"],
             label_font=font,
-            style=Button.SHADOWROUNDRECT,
+            style=Button.ROUNDRECT,
             label_color=0xFFFFFF,
             selected_label=0x000000,
             fill_color=b["fill_color"],
             selected_fill=0xFFFFFF,
-            outline_color=0xCCCCCC,
-            selected_outline=0x333333,
+            outline_color=0x444444,
+            selected_outline=0xFFFFFF,
         )
     )
 
